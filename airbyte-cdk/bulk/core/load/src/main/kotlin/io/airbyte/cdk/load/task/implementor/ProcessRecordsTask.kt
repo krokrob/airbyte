@@ -20,7 +20,7 @@ import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.KillableScope
+import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.util.lineSequence
 import io.airbyte.cdk.load.util.use
@@ -34,7 +34,7 @@ import java.io.InputStream
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.inputStream
 
-interface ProcessRecordsTask : KillableScope
+interface ProcessRecordsTask : Task
 
 /**
  * Wraps @[StreamLoader.processRecords] and feeds it a lazy iterator over the last batch of spooled
@@ -54,6 +54,11 @@ class DefaultProcessRecordsTask(
     private val outputQueue: MultiProducerChannel<BatchEnvelope<*>>,
 ) : ProcessRecordsTask {
     private val log = KotlinLogging.logger {}
+
+    override val isIO = config.processRecordsIsIO
+    override val cancelAtEndOfSync = false
+    override val killOnSyncFailure = false
+
     private val accumulators = ConcurrentHashMap<DestinationStream.Descriptor, BatchAccumulator>()
     override suspend fun execute() {
         outputQueue.use {

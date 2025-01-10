@@ -24,7 +24,7 @@ import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.TimeWindowTrigger
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.KillableScope
+import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
 import io.airbyte.cdk.load.util.use
 import io.airbyte.cdk.load.util.withNextAdjacentValue
@@ -40,7 +40,7 @@ import kotlin.io.path.deleteExisting
 import kotlin.io.path.outputStream
 import kotlinx.coroutines.flow.fold
 
-interface SpillToDiskTask : KillableScope
+interface SpillToDiskTask : Task
 
 /**
  * Reads records from the message queue and writes them to disk. Completes once the upstream
@@ -59,6 +59,10 @@ class DefaultSpillToDiskTask(
     private val processEmptyFiles: Boolean,
 ) : SpillToDiskTask {
     private val log = KotlinLogging.logger {}
+
+    override val isIO = true
+    override val cancelAtEndOfSync = false
+    override val killOnSyncFailure = false
 
     override suspend fun execute() {
         val initialAccumulator = fileAccFactory.make()

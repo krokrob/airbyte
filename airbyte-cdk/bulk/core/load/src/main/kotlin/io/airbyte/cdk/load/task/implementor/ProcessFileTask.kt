@@ -11,7 +11,7 @@ import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.ImplementorScope
+import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.util.use
 import io.airbyte.cdk.load.write.FileBatchAccumulator
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -20,7 +20,7 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
-interface ProcessFileTask : ImplementorScope
+interface ProcessFileTask : Task
 
 class DefaultProcessFileTask(
     private val syncManager: SyncManager,
@@ -28,6 +28,10 @@ class DefaultProcessFileTask(
     private val inputQueue: MessageQueue<FileTransferQueueMessage>,
     private val outputQueue: MultiProducerChannel<BatchEnvelope<*>>,
 ) : ProcessFileTask {
+    override val isIO = false
+    override val cancelAtEndOfSync = false
+    override val killOnSyncFailure = false
+
     val log = KotlinLogging.logger {}
     private val accumulators =
         ConcurrentHashMap<DestinationStream.Descriptor, FileBatchAccumulator>()

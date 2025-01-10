@@ -73,7 +73,6 @@ import org.junit.jupiter.api.Test
             "DestinationTaskLauncherTest",
             "MockDestinationConfiguration",
             "MockDestinationCatalog",
-            "MockScopeProvider",
         ]
 )
 class DestinationTaskLauncherTest {
@@ -158,6 +157,10 @@ class DestinationTaskLauncherTest {
             fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
         ): InputConsumerTask {
             return object : InputConsumerTask {
+                override val isIO: Boolean = false
+                override val killOnSyncFailure: Boolean = false
+                override val cancelAtEndOfSync: Boolean = false
+
                 override suspend fun execute() {
                     hasRun.send(true)
                 }
@@ -175,6 +178,10 @@ class DestinationTaskLauncherTest {
             taskLauncher: DestinationTaskLauncher,
         ): SetupTask {
             return object : SetupTask {
+                override val isIO: Boolean = false
+                override val killOnSyncFailure: Boolean = false
+                override val cancelAtEndOfSync: Boolean = false
+
                 override suspend fun execute() {
                     hasRun.send(Unit)
                 }
@@ -198,6 +205,10 @@ class DestinationTaskLauncherTest {
             stream: DestinationStream.Descriptor
         ): SpillToDiskTask {
             return object : SpillToDiskTask {
+                override val isIO: Boolean = false
+                override val killOnSyncFailure: Boolean = false
+                override val cancelAtEndOfSync: Boolean = false
+
                 override suspend fun execute() {
                     if (forceFailure.get()) {
                         throw Exception("Forced failure")
@@ -223,6 +234,10 @@ class DestinationTaskLauncherTest {
             stream: DestinationStream
         ): OpenStreamTask {
             return object : OpenStreamTask {
+                override val isIO: Boolean = false
+                override val killOnSyncFailure: Boolean = false
+                override val cancelAtEndOfSync: Boolean = false
+
                 override suspend fun execute() {
                     streamHasRun[stream]?.send(Unit)
                 }
@@ -241,6 +256,10 @@ class DestinationTaskLauncherTest {
             stream: DestinationStream.Descriptor,
         ): CloseStreamTask {
             return object : CloseStreamTask {
+                override val isIO: Boolean = false
+                override val killOnSyncFailure: Boolean = false
+                override val cancelAtEndOfSync: Boolean = false
+
                 override suspend fun execute() {
                     hasRun.send(Unit)
                 }
@@ -256,6 +275,10 @@ class DestinationTaskLauncherTest {
 
         override fun make(taskLauncher: DestinationTaskLauncher): TeardownTask {
             return object : TeardownTask {
+                override val isIO: Boolean = false
+                override val killOnSyncFailure: Boolean = false
+                override val cancelAtEndOfSync: Boolean = false
+
                 override suspend fun execute() {
                     hasRun.send(Unit)
                 }
@@ -271,6 +294,10 @@ class DestinationTaskLauncherTest {
 
         override fun make(): FlushCheckpointsTask {
             return object : FlushCheckpointsTask {
+                override val isIO: Boolean = false
+                override val killOnSyncFailure: Boolean = false
+                override val cancelAtEndOfSync: Boolean = false
+
                 override suspend fun execute() {
                     hasRun.send(true)
                 }
@@ -282,6 +309,10 @@ class DestinationTaskLauncherTest {
     @Primary
     @Requires(env = ["DestinationTaskLauncherTest"])
     class MockForceFlushTask : TimedForcedCheckpointFlushTask {
+        override val isIO: Boolean = false
+        override val killOnSyncFailure: Boolean = false
+        override val cancelAtEndOfSync: Boolean = false
+
         val didRun = Channel<Boolean>(Channel.UNLIMITED)
 
         override suspend fun execute() {
@@ -293,6 +324,10 @@ class DestinationTaskLauncherTest {
     @Primary
     @Requires(env = ["DestinationTaskLauncherTest"])
     class MockUpdateCheckpointsTask : UpdateCheckpointsTask {
+        override val isIO: Boolean = false
+        override val killOnSyncFailure: Boolean = false
+        override val cancelAtEndOfSync: Boolean = false
+
         val didRun = Channel<Boolean>(Channel.UNLIMITED)
         override suspend fun execute() {
             didRun.send(true)
@@ -310,6 +345,10 @@ class DestinationTaskLauncherTest {
             stream: DestinationStream.Descriptor
         ): FailStreamTask {
             return object : FailStreamTask {
+                override val isIO: Boolean = false
+                override val killOnSyncFailure: Boolean = false
+                override val cancelAtEndOfSync: Boolean = false
+
                 override suspend fun execute() {
                     didRunFor.send(stream)
                 }
@@ -327,6 +366,10 @@ class DestinationTaskLauncherTest {
             exception: Exception
         ): FailSyncTask {
             return object : FailSyncTask {
+                override val isIO: Boolean = false
+                override val killOnSyncFailure: Boolean = false
+                override val cancelAtEndOfSync: Boolean = false
+
                 override suspend fun execute() {
                     didRun.send(true)
                 }
